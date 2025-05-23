@@ -26,52 +26,61 @@ export const ProfileUI: FC<ProfileUIProps> = ({
       <>
         <div className='pb-6'>
           <Input
-            type={'text'}
-            placeholder={'Имя'}
+            type='text'
+            placeholder='Имя'
             onChange={handleInputChange}
             value={formValue.name}
-            name={'name'}
+            name='name'
             error={false}
-            errorText={''}
-            size={'default'}
-            icon={'EditIcon'}
+            errorText=''
+            size='default'
+            icon='EditIcon'
+            onIconClick={() => {}}
+            onPointerEnterCapture={() => {}}
+            onPointerLeaveCapture={() => {}}
           />
         </div>
         <div className='pb-6'>
           <Input
-            type={'email'}
-            placeholder={'E-mail'}
+            type='email'
+            placeholder='E-mail'
             onChange={handleInputChange}
             value={formValue.email}
-            name={'email'}
+            name='email'
             error={false}
-            errorText={''}
-            size={'default'}
-            icon={'EditIcon'}
+            errorText=''
+            size='default'
+            icon='EditIcon'
+            onIconClick={() => {}}
+            onPointerEnterCapture={() => {}}
+            onPointerLeaveCapture={() => {}}
           />
         </div>
         <div className='pb-6'>
           <Input
-            type={'password'}
-            placeholder={'Пароль'}
+            type='password'
+            placeholder='Пароль'
             onChange={handleInputChange}
             value={formValue.password}
-            name={'password'}
+            name='password'
             error={false}
-            errorText={''}
-            size={'default'}
-            icon={'EditIcon'}
+            errorText=''
+            size='default'
+            icon='EditIcon'
+            onIconClick={() => {}}
+            onPointerEnterCapture={() => {}}
+            onPointerLeaveCapture={() => {}}
           />
         </div>
         {isFormChanged && (
-          <div className={styles.button}>
+          <div className={styles.buttons}>
             <Button
               type='secondary'
-              htmlType='button'
               size='medium'
+              htmlType='button'
               onClick={handleCancel}
             >
-              Отменить
+              Отмена
             </Button>
             <Button type='primary' size='medium' htmlType='submit'>
               Сохранить
@@ -79,9 +88,7 @@ export const ProfileUI: FC<ProfileUIProps> = ({
           </div>
         )}
         {updateUserError && (
-          <p
-            className={`${commonStyles.error} pt-5 text text_type_main-default`}
-          >
+          <p className={`${styles.error} text text_type_main-default pt-6`}>
             {updateUserError}
           </p>
         )}

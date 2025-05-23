@@ -1,10 +1,22 @@
+import { FC, useEffect } from 'react';
 import { ProfileOrdersUI } from '@ui-pages';
-import { TOrder } from '@utils-types';
-import { FC } from 'react';
+import { useAppDispatch, useAppSelector } from '../../services/store';
+import { connectToUserOrders } from '../../services/websocket';
+import { getCookie } from '../../utils/cookie';
 
 export const ProfileOrders: FC = () => {
-  /** TODO: взять переменную из стора */
-  const orders: TOrder[] = [];
+  const dispatch = useAppDispatch();
+  const { userOrders } = useAppSelector((state) => state.feed);
+  const token = getCookie('accessToken');
 
-  return <ProfileOrdersUI orders={orders} />;
+  useEffect(() => {
+    if (token) {
+      const disconnect = connectToUserOrders(dispatch, token);
+      return () => {
+        disconnect();
+      };
+    }
+  }, [dispatch, token]);
+
+  return <ProfileOrdersUI orders={userOrders} />;
 };
