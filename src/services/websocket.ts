@@ -10,7 +10,13 @@ export const connectToOrders = (dispatch: AppDispatch) => {
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data) as TWSMessage;
     if (data.success) {
-      dispatch(updateOrders({ orders: data.orders, total: data.total, totalToday: data.totalToday }));
+      dispatch(
+        updateOrders({
+          orders: data.orders,
+          total: data.total,
+          totalToday: data.totalToday
+        })
+      );
     }
   };
 
@@ -32,4 +38,4 @@ export const connectToUserOrders = (dispatch: AppDispatch, token: string) => {
   return () => {
     socket.close();
   };
-}; 
+};

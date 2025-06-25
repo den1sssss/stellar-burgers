@@ -1,6 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { TUser, TLoginData, TRegisterData } from '../../utils/types';
-import { loginUserApi, registerUserApi, logoutApi, getUserApi, updateUserApi } from '../../utils/burger-api';
+import {
+  loginUserApi,
+  registerUserApi,
+  logoutApi,
+  getUserApi,
+  updateUserApi
+} from '../../utils/burger-api';
 import { setCookie, deleteCookie } from '../../utils/cookie';
 
 interface AuthState {
@@ -12,7 +18,7 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   loading: false,
-  error: null,
+  error: null
 };
 
 export const loginUser = createAsyncThunk(
@@ -35,22 +41,16 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-export const logoutUser = createAsyncThunk(
-  'auth/logout',
-  async () => {
-    await logoutApi();
-    localStorage.removeItem('refreshToken');
-    deleteCookie('accessToken');
-  }
-);
+export const logoutUser = createAsyncThunk('auth/logout', async () => {
+  await logoutApi();
+  localStorage.removeItem('refreshToken');
+  deleteCookie('accessToken');
+});
 
-export const getUser = createAsyncThunk(
-  'auth/getUser',
-  async () => {
-    const response = await getUserApi();
-    return response.user;
-  }
-);
+export const getUser = createAsyncThunk('auth/getUser', async () => {
+  const response = await getUserApi();
+  return response.user;
+});
 
 export const updateUser = createAsyncThunk(
   'auth/updateUser',
@@ -66,7 +66,7 @@ const authSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -126,8 +126,8 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Failed to update user data';
       });
-  },
+  }
 });
 
 export const { clearError } = authSlice.actions;
-export default authSlice.reducer; 
+export default authSlice.reducer;

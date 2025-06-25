@@ -31,4 +31,4 @@ export const WebSocketProvider: FC<WebSocketProviderProps> = ({ children }) => {
   }, [dispatch, location.pathname, user, token]);
 
   return <>{children}</>;
-}; 
+};

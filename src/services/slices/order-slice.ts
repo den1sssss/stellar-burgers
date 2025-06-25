@@ -11,7 +11,7 @@ interface OrderState {
 const initialState: OrderState = {
   currentOrder: null,
   loading: false,
-  error: null,
+  error: null
 };
 
 export const createOrder = createAsyncThunk(
@@ -29,7 +29,7 @@ const orderSlice = createSlice({
     clearOrder: (state) => {
       state.currentOrder = null;
       state.error = null;
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -45,8 +45,8 @@ const orderSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Failed to create order';
       });
-  },
+  }
 });
 
 export const { clearOrder } = orderSlice.actions;
-export default orderSlice.reducer; 
+export default orderSlice.reducer;

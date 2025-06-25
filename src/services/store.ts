@@ -12,9 +12,9 @@ export const store = configureStore({
     constructor: constructorReducer,
     order: orderReducer,
     auth: authReducer,
-    feed: feedReducer,
+    feed: feedReducer
   },
-  devTools: process.env.NODE_ENV !== 'production',
+  devTools: process.env.NODE_ENV !== 'production'
 });
 
 export type RootState = ReturnType<typeof store.getState>;

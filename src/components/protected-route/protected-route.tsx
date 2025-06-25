@@ -11,8 +11,8 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({ children }) => {
 
   if (!isAuthenticated) {
     // Save the attempted URL for redirecting after login
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to='/login' state={{ from: location }} replace />;
   }
 
   return children;
-}; 
+};

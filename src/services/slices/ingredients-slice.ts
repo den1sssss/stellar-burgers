@@ -11,7 +11,7 @@ interface IngredientsState {
 const initialState: IngredientsState = {
   items: [],
   loading: false,
-  error: null,
+  error: null
 };
 
 export const fetchIngredients = createAsyncThunk(
@@ -40,7 +40,7 @@ const ingredientsSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch ingredients';
       });
-  },
+  }
 });
 
-export default ingredientsSlice.reducer; 
+export default ingredientsSlice.reducer;

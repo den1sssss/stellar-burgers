@@ -17,16 +17,13 @@ const initialState: FeedState = {
   total: 0,
   totalToday: 0,
   loading: false,
-  error: null,
+  error: null
 };
 
-export const fetchFeeds = createAsyncThunk(
-  'feed/fetchFeeds',
-  async () => {
-    const response = await getFeedsApi();
-    return response;
-  }
-);
+export const fetchFeeds = createAsyncThunk('feed/fetchFeeds', async () => {
+  const response = await getFeedsApi();
+  return response;
+});
 
 export const fetchUserOrders = createAsyncThunk(
   'feed/fetchUserOrders',
@@ -47,7 +44,7 @@ const feedSlice = createSlice({
     },
     updateUserOrders: (state, action) => {
       state.userOrders = action.payload;
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -79,8 +76,8 @@ const feedSlice = createSlice({
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch user orders';
       });
-  },
+  }
 });
 
 export const { updateOrders, updateUserOrders } = feedSlice.actions;
-export default feedSlice.reducer; 
+export default feedSlice.reducer;

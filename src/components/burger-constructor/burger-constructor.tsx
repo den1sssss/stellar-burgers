@@ -9,9 +9,11 @@ import { clearConstructor } from '../../services/slices/constructor-slice';
 export const BurgerConstructor: FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  
+
   const { bun, ingredients } = useAppSelector((state) => state.constructor);
-  const { currentOrder, loading: orderRequest } = useAppSelector((state) => state.order);
+  const { currentOrder, loading: orderRequest } = useAppSelector(
+    (state) => state.order
+  );
   const { user } = useAppSelector((state) => state.auth);
 
   const onOrderClick = () => {
@@ -35,17 +37,14 @@ export const BurgerConstructor: FC = () => {
     dispatch(clearConstructor());
   };
 
-  const price = useMemo(
-    () => {
-      const bunPrice = bun ? bun.price * 2 : 0;
-      const ingredientsPrice = ingredients.reduce(
-        (sum, item) => sum + (item?.price || 0),
-        0
-      );
-      return bunPrice + ingredientsPrice;
-    },
-    [bun, ingredients]
-  );
+  const price = useMemo(() => {
+    const bunPrice = bun ? bun.price * 2 : 0;
+    const ingredientsPrice = ingredients.reduce(
+      (sum, item) => sum + (item?.price || 0),
+      0
+    );
+    return bunPrice + ingredientsPrice;
+  }, [bun, ingredients]);
 
   return (
     <BurgerConstructorUI

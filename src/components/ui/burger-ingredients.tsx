@@ -28,11 +28,5 @@ export const BurgerIngredientsUI: React.FC<BurgerIngredientsUIProps> = ({
   mainsRef,
   saucesRef,
   onTabClick,
-  onIngredientClick,
-}) => {
-  return (
-    <div>
-      {/* Implement your UI here */}
-    </div>
-  );
-}; 
+  onIngredientClick
+}) => <div>{/* Implement your UI here */}</div>;

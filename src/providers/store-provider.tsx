@@ -8,4 +8,4 @@ interface StoreProviderProps {
 
 export const StoreProvider: FC<StoreProviderProps> = ({ children }) => (
   <Provider store={store}>{children}</Provider>
-); 
+);
