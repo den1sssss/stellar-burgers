@@ -9,7 +9,7 @@ import feedReducer from './slices/feed-slice';
 export const store = configureStore({
   reducer: {
     ingredients: ingredientsReducer,
-    constructor: constructorReducer,
+    burgerConstructor: constructorReducer,
     order: orderReducer,
     auth: authReducer,
     feed: feedReducer

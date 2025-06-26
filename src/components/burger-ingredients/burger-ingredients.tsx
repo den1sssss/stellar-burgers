@@ -37,8 +37,10 @@ export const BurgerIngredients: FC = () => {
   });
 
   useEffect(() => {
-    dispatch(fetchIngredients());
-  }, [dispatch]);
+    if (!ingredients.length) {
+      dispatch(fetchIngredients());
+    }
+  }, [dispatch, ingredients.length]);
 
   useEffect(() => {
     if (inViewBuns) {

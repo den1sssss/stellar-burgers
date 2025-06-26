@@ -31,7 +31,7 @@ export const DefaultFeedInfo: Story = {
       ],
       total: 12,
       totalToday: 2,
-      isLoading: false,
+      loading: false,
       error: null
     },
     readyOrders: [123, 124, 125],
