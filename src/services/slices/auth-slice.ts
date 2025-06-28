@@ -47,10 +47,27 @@ export const logoutUser = createAsyncThunk('auth/logout', async () => {
   deleteCookie('accessToken');
 });
 
-export const getUser = createAsyncThunk('auth/getUser', async () => {
-  const response = await getUserApi();
-  return response.user;
-});
+export const getUser = createAsyncThunk(
+  'auth/getUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await getUserApi();
+      return response.user;
+    } catch (error) {
+      // Если нет токенов или они недействительны, не показываем ошибку
+      if (
+        (error as any)?.message === 'jwt expired' ||
+        (error as any)?.message === 'jwt malformed' ||
+        !localStorage.getItem('refreshToken')
+      ) {
+        return rejectWithValue('No valid tokens');
+      }
+      return rejectWithValue(
+        (error as any)?.message || 'Failed to get user data'
+      );
+    }
+  }
+);
 
 export const updateUser = createAsyncThunk(
   'auth/updateUser',
@@ -111,7 +128,10 @@ const authSlice = createSlice({
       })
       .addCase(getUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to get user data';
+        // Не показываем ошибку, если просто нет токенов
+        if (action.payload !== 'No valid tokens') {
+          state.error = action.error.message || 'Failed to get user data';
+        }
       })
       // Update User
       .addCase(updateUser.pending, (state) => {

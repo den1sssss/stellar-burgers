@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, FC } from 'react';
+import { useState, useRef, useEffect, FC, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
 import { useAppDispatch, useAppSelector } from '../../services/store';
@@ -9,15 +9,37 @@ import { fetchIngredients } from '../../services/slices/ingredients-slice';
 export const BurgerIngredients: FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     items: ingredients,
     loading,
     error
   } = useAppSelector((state) => state.ingredients);
 
+  const { bun, ingredients: constructorIngredients } = useAppSelector(
+    (state) => state.burgerConstructor
+  );
+
   const buns = ingredients.filter((item) => item.type === 'bun');
   const mains = ingredients.filter((item) => item.type === 'main');
   const sauces = ingredients.filter((item) => item.type === 'sauce');
+
+  // Подсчитываем количество каждого ингредиента в конструкторе
+  const ingredientCounts = useMemo(() => {
+    const counts: { [key: string]: number } = {};
+
+    // Подсчитываем булку
+    if (bun) {
+      counts[bun._id] = 2; // Булка всегда 2 штуки
+    }
+
+    // Подсчитываем остальные ингредиенты
+    constructorIngredients.forEach((ingredient) => {
+      counts[ingredient._id] = (counts[ingredient._id] || 0) + 1;
+    });
+
+    return counts;
+  }, [bun, constructorIngredients]);
 
   const [currentTab, setCurrentTab] = useState<TTabMode>('bun');
   const titleBunRef = useRef<HTMLHeadingElement>(null);
@@ -63,7 +85,7 @@ export const BurgerIngredients: FC = () => {
   };
 
   const handleIngredientClick = (id: string) => {
-    navigate(`/ingredients/${id}`);
+    navigate(`/ingredients/${id}`, { state: { background: location } });
   };
 
   if (loading) {
@@ -88,6 +110,7 @@ export const BurgerIngredients: FC = () => {
       saucesRef={saucesRef}
       onTabClick={onTabClick}
       onIngredientClick={handleIngredientClick}
+      ingredientCounts={ingredientCounts}
     />
   );
 };

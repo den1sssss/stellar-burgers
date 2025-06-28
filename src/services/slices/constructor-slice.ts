@@ -19,12 +19,16 @@ const constructorSlice = createSlice({
       if (action.payload.type === 'bun') {
         state.bun = action.payload;
       } else {
-        state.ingredients.push(action.payload);
+        const ingredientWithId = {
+          ...action.payload,
+          constructorId: `${action.payload._id}_${Date.now()}_${Math.random()}`
+        };
+        state.ingredients.push(ingredientWithId);
       }
     },
     removeIngredient: (state, action: PayloadAction<string>) => {
       state.ingredients = state.ingredients.filter(
-        (item) => item._id !== action.payload
+        (item) => item.constructorId !== action.payload
       );
     },
     moveIngredient: (

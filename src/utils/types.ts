@@ -10,6 +10,7 @@ export type TIngredient = {
   image: string;
   image_large: string;
   image_mobile: string;
+  constructorId?: string;
 };
 
 export type TConstructorIngredient = TIngredient & {

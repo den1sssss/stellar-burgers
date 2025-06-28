@@ -17,7 +17,7 @@ export const BurgerConstructor: FC = () => {
   const safeConstructorIngredients: TConstructorIngredient[] =
     safeIngredients.map((item, idx) => ({
       ...item,
-      id: item._id || String(idx)
+      id: item.constructorId || String(idx)
     }));
   const { currentOrder, loading: orderRequest } = useAppSelector(
     (state) => state.order

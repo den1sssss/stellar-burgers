@@ -1,22 +1,19 @@
 import { FC, useEffect } from 'react';
 import { ProfileOrdersUI } from '@ui-pages';
 import { useAppDispatch, useAppSelector } from '../../services/store';
-import { connectToUserOrders } from '../../services/websocket';
-import { getCookie } from '../../utils/cookie';
+import { fetchUserOrders } from '../../services/slices/feed-slice';
 
 export const ProfileOrders: FC = () => {
   const dispatch = useAppDispatch();
-  const { userOrders } = useAppSelector((state) => state.feed);
-  const token = getCookie('accessToken');
+  const { userOrders, loading } = useAppSelector((state) => state.feed);
 
   useEffect(() => {
-    if (token) {
-      const disconnect = connectToUserOrders(dispatch, token);
-      return () => {
-        disconnect();
-      };
-    }
-  }, [dispatch, token]);
+    dispatch(fetchUserOrders());
+  }, [dispatch]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return <ProfileOrdersUI orders={userOrders} />;
 };

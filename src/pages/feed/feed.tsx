@@ -2,7 +2,6 @@ import { FC, useEffect } from 'react';
 import { Preloader } from '@ui';
 import { FeedUI } from '@ui-pages';
 import { useAppDispatch, useAppSelector } from '../../services/store';
-import { connectToOrders } from '../../services/websocket';
 import { fetchFeeds } from '../../services/slices/feed-slice';
 
 export const Feed: FC = () => {
@@ -10,10 +9,7 @@ export const Feed: FC = () => {
   const { orders, loading } = useAppSelector((state) => state.feed);
 
   useEffect(() => {
-    const disconnect = connectToOrders(dispatch);
-    return () => {
-      disconnect();
-    };
+    dispatch(fetchFeeds());
   }, [dispatch]);
 
   const handleGetFeeds = () => {
