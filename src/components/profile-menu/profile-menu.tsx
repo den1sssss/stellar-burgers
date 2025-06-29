@@ -11,7 +11,7 @@ export const ProfileMenu: FC = () => {
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
-    navigate('/login');
+    navigate('/login', { state: { from: pathname }, replace: true });
   };
 
   return <ProfileMenuUI handleLogout={handleLogout} pathname={pathname} />;

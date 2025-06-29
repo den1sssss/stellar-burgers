@@ -11,7 +11,7 @@ import {
 import { TBurgerIngredientUIProps } from './type';
 
 export const BurgerIngredientUI: FC<TBurgerIngredientUIProps> = memo(
-  ({ ingredient, count, handleAdd, onIngredientClick }) => {
+  ({ ingredient, count, handleAdd }) => {
     const location = useLocation();
     const { image, price, name, _id } = ingredient;
 
@@ -21,7 +21,6 @@ export const BurgerIngredientUI: FC<TBurgerIngredientUIProps> = memo(
           className={styles.article}
           to={`/ingredients/${_id}`}
           state={{ background: location }}
-          onClick={() => onIngredientClick(_id)}
         >
           {count > 0 && <Counter count={count} />}
           <img className={styles.img} src={image} alt='картинка ингредиента.' />

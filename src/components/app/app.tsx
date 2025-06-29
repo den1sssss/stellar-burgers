@@ -28,6 +28,8 @@ import {
 } from '@components';
 import { useAppDispatch, useAppSelector } from '../../services/store';
 import { getUser } from '../../services/slices/auth-slice';
+import { fetchIngredients } from '../../services/slices/ingredients-slice';
+import { fetchFeeds } from '../../services/slices/feed-slice';
 
 const ModalWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
@@ -46,15 +48,35 @@ const AppContent: FC = () => {
   const location = useLocation();
   const background = location.state?.background;
   const dispatch = useAppDispatch();
-  const { user, loading } = useAppSelector((state) => state.auth);
+  const { user, loading: authLoading } = useAppSelector((state) => state.auth);
+  const { items: ingredients, loading: ingredientsLoading } = useAppSelector(
+    (state) => state.ingredients
+  );
+  const { orders, loading: feedsLoading } = useAppSelector(
+    (state) => state.feed
+  );
 
-  // Автологин при загрузке приложения (только один раз)
+  // Автологин при загрузке приложения
   useEffect(() => {
     const refreshToken = localStorage.getItem('refreshToken');
-    if (!user && !loading && refreshToken) {
+    if (refreshToken && !user && !authLoading) {
       dispatch(getUser());
     }
-  }, []); // Пустой массив зависимостей - запускается только один раз
+  }, [dispatch, user, authLoading]);
+
+  // Загрузка ингредиентов при загрузке приложения (только один раз)
+  useEffect(() => {
+    if (!ingredients.length && !ingredientsLoading) {
+      dispatch(fetchIngredients());
+    }
+  }, [dispatch, ingredients.length, ingredientsLoading]);
+
+  // Загрузка заказов при загрузке приложения (только один раз)
+  useEffect(() => {
+    if (!orders.length && !feedsLoading) {
+      dispatch(fetchFeeds());
+    }
+  }, [dispatch, orders.length, feedsLoading]);
 
   return (
     <div className={styles.app}>
@@ -86,23 +108,27 @@ const AppContent: FC = () => {
           }
         />
 
-        {/* Detail pages */}
-        <Route path='/feed/:number' element={<OrderInfo />} />
-        <Route path='/ingredients/:id' element={<IngredientDetails />} />
-        <Route
-          path='/profile/orders/:number'
-          element={
-            <ProtectedRoute>
-              <OrderInfo />
-            </ProtectedRoute>
-          }
-        />
+        {/* Detail pages - только для прямых переходов (не модальные) */}
+        {!background && (
+          <>
+            <Route path='/feed/:number' element={<OrderInfo />} />
+            <Route path='/ingredients/:id' element={<IngredientDetails />} />
+            <Route
+              path='/profile/orders/:number'
+              element={
+                <ProtectedRoute>
+                  <OrderInfo />
+                </ProtectedRoute>
+              }
+            />
+          </>
+        )}
 
         {/* 404 route */}
         <Route path='*' element={<NotFound404 />} />
       </Routes>
 
-      {/* Modal routes - only show when there's a background */}
+      {/* Modal routes - только когда есть background */}
       {background && (
         <Routes>
           <Route

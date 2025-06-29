@@ -12,12 +12,12 @@ export const IngredientDetails: FC = () => {
   const ingredientData = items.find((item) => item._id === id);
 
   useEffect(() => {
-    if (!items.length && !loading) {
+    if (!items.length) {
       dispatch(fetchIngredients());
     }
-  }, [dispatch, items.length, loading]);
+  }, [dispatch, items.length]);
 
-  if (loading) {
+  if (loading || !items.length) {
     return <Preloader />;
   }
 

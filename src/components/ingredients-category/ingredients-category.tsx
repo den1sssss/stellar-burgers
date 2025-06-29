@@ -6,18 +6,12 @@ import { useAppSelector } from '../../services/store';
 export const IngredientsCategory = forwardRef<
   HTMLUListElement,
   TIngredientsCategoryProps
->(
-  (
-    { title, titleRef, ingredients, onIngredientClick, ingredientCounts },
-    ref
-  ) => (
-    <IngredientsCategoryUI
-      title={title}
-      titleRef={titleRef}
-      ingredients={ingredients}
-      onIngredientClick={onIngredientClick}
-      ingredientCounts={ingredientCounts}
-      ref={ref}
-    />
-  )
-);
+>(({ title, titleRef, ingredients, ingredientCounts }, ref) => (
+  <IngredientsCategoryUI
+    title={title}
+    titleRef={titleRef}
+    ingredients={ingredients}
+    ingredientCounts={ingredientCounts}
+    ref={ref}
+  />
+));

@@ -16,7 +16,10 @@ export const Login: FC = () => {
     e.preventDefault();
     const result = await dispatch(loginUser({ email, password }));
     if (loginUser.fulfilled.match(result)) {
-      const from = location.state?.from?.pathname || '/';
+      const from =
+        typeof location.state?.from === 'string'
+          ? location.state.from
+          : location.state?.from?.pathname || '/';
       navigate(from, { replace: true });
     }
   };

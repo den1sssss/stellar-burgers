@@ -1,4 +1,6 @@
-import { useAppSelector } from '../../services/store';
+import { useAppDispatch, useAppSelector } from '../../services/store';
+import { useEffect } from 'react';
+import { fetchIngredients } from '../../services/slices/ingredients-slice';
 
 import styles from './constructor-page.module.css';
 
@@ -8,7 +10,14 @@ import { Preloader } from '../../components/ui';
 import { FC } from 'react';
 
 export const ConstructorPage: FC = () => {
+  const dispatch = useAppDispatch();
   const { items, loading } = useAppSelector((state) => state.ingredients);
+
+  useEffect(() => {
+    if (!items.length) {
+      dispatch(fetchIngredients());
+    }
+  }, [dispatch, items.length]);
 
   return (
     <>

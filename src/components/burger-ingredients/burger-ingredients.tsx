@@ -3,13 +3,13 @@ import { useInView } from 'react-intersection-observer';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
-import { useAppDispatch, useAppSelector } from '../../services/store';
+import { useAppSelector, useAppDispatch } from '../../services/store';
 import { fetchIngredients } from '../../services/slices/ingredients-slice';
 
 export const BurgerIngredients: FC = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
   const {
     items: ingredients,
     loading,
@@ -19,6 +19,12 @@ export const BurgerIngredients: FC = () => {
   const { bun, ingredients: constructorIngredients } = useAppSelector(
     (state) => state.burgerConstructor
   );
+
+  useEffect(() => {
+    if (!ingredients.length) {
+      dispatch(fetchIngredients());
+    }
+  }, [dispatch, ingredients.length]);
 
   const buns = ingredients.filter((item) => item.type === 'bun');
   const mains = ingredients.filter((item) => item.type === 'main');
@@ -59,12 +65,6 @@ export const BurgerIngredients: FC = () => {
   });
 
   useEffect(() => {
-    if (!ingredients.length) {
-      dispatch(fetchIngredients());
-    }
-  }, [dispatch, ingredients.length]);
-
-  useEffect(() => {
     if (inViewBuns) {
       setCurrentTab('bun');
     } else if (inViewSauces) {
@@ -82,10 +82,6 @@ export const BurgerIngredients: FC = () => {
       titleMainRef.current?.scrollIntoView({ behavior: 'smooth' });
     if (tab === 'sauce')
       titleSaucesRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleIngredientClick = (id: string) => {
-    navigate(`/ingredients/${id}`, { state: { background: location } });
   };
 
   if (loading) {
@@ -109,7 +105,6 @@ export const BurgerIngredients: FC = () => {
       mainsRef={mainsRef}
       saucesRef={saucesRef}
       onTabClick={onTabClick}
-      onIngredientClick={handleIngredientClick}
       ingredientCounts={ingredientCounts}
     />
   );

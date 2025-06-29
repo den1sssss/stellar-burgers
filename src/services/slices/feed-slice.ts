@@ -1,6 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getFeedsApi, getOrdersApi } from '../../utils/burger-api';
+import {
+  getFeedsApi,
+  getOrdersApi,
+  clearAuthTokens
+} from '../../utils/burger-api';
 import { TOrder } from '../../utils/types';
+import { deleteCookie } from '../../utils/cookie';
 
 interface FeedState {
   orders: TOrder[];
@@ -24,7 +29,26 @@ export const fetchFeeds = createAsyncThunk('feed/fetchFeeds', getFeedsApi);
 
 export const fetchUserOrders = createAsyncThunk(
   'feed/fetchUserOrders',
-  getOrdersApi
+  async (_, { rejectWithValue }) => {
+    try {
+      return await getOrdersApi();
+    } catch (error) {
+      // Если ошибка связана с аутентификацией, очищаем токены
+      if (
+        (error as any)?.message === 'jwt expired' ||
+        (error as any)?.message === 'jwt malformed' ||
+        (error as any)?.message === 'Token is invalid' ||
+        (error as any)?.message === 'You should be authorised' ||
+        (error as any)?.message === 'No refresh token'
+      ) {
+        clearAuthTokens();
+        return rejectWithValue('Authentication failed');
+      }
+      return rejectWithValue(
+        (error as any)?.message || 'Failed to fetch user orders'
+      );
+    }
+  }
 );
 
 const feedSlice = createSlice({
@@ -68,7 +92,10 @@ const feedSlice = createSlice({
       })
       .addCase(fetchUserOrders.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch user orders';
+        // Не показываем ошибку, если это проблема аутентификации
+        if (action.payload !== 'Authentication failed') {
+          state.error = action.error.message || 'Failed to fetch user orders';
+        }
       });
   }
 });

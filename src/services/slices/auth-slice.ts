@@ -5,7 +5,8 @@ import {
   registerUserApi,
   logoutApi,
   getUserApi,
-  updateUserApi
+  updateUserApi,
+  clearAuthTokens
 } from '../../utils/burger-api';
 import { setCookie, deleteCookie } from '../../utils/cookie';
 
@@ -26,7 +27,7 @@ export const loginUser = createAsyncThunk(
   async (data: TLoginData) => {
     const response = await loginUserApi(data);
     localStorage.setItem('refreshToken', response.refreshToken);
-    setCookie('accessToken', response.accessToken);
+    setCookie('accessToken', response.accessToken, { expires: 1200 }); // 20 минут
     return response.user;
   }
 );
@@ -36,7 +37,7 @@ export const registerUser = createAsyncThunk(
   async (data: TRegisterData) => {
     const response = await registerUserApi(data);
     localStorage.setItem('refreshToken', response.refreshToken);
-    setCookie('accessToken', response.accessToken);
+    setCookie('accessToken', response.accessToken, { expires: 1200 }); // 20 минут
     return response.user;
   }
 );
@@ -58,8 +59,13 @@ export const getUser = createAsyncThunk(
       if (
         (error as any)?.message === 'jwt expired' ||
         (error as any)?.message === 'jwt malformed' ||
+        (error as any)?.message === 'Token is invalid' ||
+        (error as any)?.message === 'No access token' ||
+        (error as any)?.message === 'No refresh token' ||
         !localStorage.getItem('refreshToken')
       ) {
+        // Очищаем недействительные токены
+        clearAuthTokens();
         return rejectWithValue('No valid tokens');
       }
       return rejectWithValue(

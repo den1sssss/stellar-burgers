@@ -1,6 +1,7 @@
-import { FC, ReactElement } from 'react';
+import { FC, ReactElement, useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAppSelector } from '../../services/store';
+import { useAppDispatch, useAppSelector } from '../../services/store';
+import { getUser } from '../../services/slices/auth-slice';
 import { Preloader } from '../ui/preloader';
 
 interface ProtectedRouteProps {
@@ -13,8 +14,17 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({
   anonymous = false
 }) => {
   const location = useLocation();
+  const dispatch = useAppDispatch();
   const { user, loading } = useAppSelector((state) => state.auth);
-  const from = location.state?.from || '/';
+  const from = location.state?.from || location.pathname;
+
+  // Автологин при загрузке защищенного маршрута
+  useEffect(() => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (refreshToken && !user && !loading) {
+      dispatch(getUser());
+    }
+  }, [dispatch, user, loading]);
 
   // Показываем прелоадер во время проверки авторизации
   if (loading) {
