@@ -1,52 +1,33 @@
-import { FC, useMemo, useEffect } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { Preloader } from '../ui/preloader';
-import { OrderInfoUI } from '../ui/order-info';
-import { TIngredient } from '@utils-types';
-import { useAppDispatch, useAppSelector } from '../../services/store';
-import { fetchFeeds } from '../../services/slices/feed-slice';
-import { fetchIngredients } from '../../services/slices/ingredients-slice';
+import { OrderInfoUI } from '@ui';
+import { useAppSelector, useAppDispatch } from '../../services/store';
+import { fetchOrderByNumber } from '../../services/slices/feed-slice';
 
 export const OrderInfo: FC = () => {
-  const dispatch = useAppDispatch();
   const { number } = useParams<{ number: string }>();
-  const { orders } = useAppSelector((state) => state.feed);
-  const { items: ingredients, loading: ingredientsLoading } = useAppSelector(
-    (state) => state.ingredients
+  const dispatch = useAppDispatch();
+  const { currentOrder, loading, error } = useAppSelector(
+    (state) => state.feed
   );
-  const orderData = orders.find((order) => order.number === Number(number));
+  const { items: ingredients } = useAppSelector((state) => state.ingredients);
 
-  // Загружаем заказы и ингредиенты, если их нет
   useEffect(() => {
-    if (!orders.length) {
-      dispatch(fetchFeeds());
+    if (number) {
+      dispatch(fetchOrderByNumber(number));
     }
-    if (!ingredients.length) {
-      dispatch(fetchIngredients());
-    }
-  }, [dispatch, orders.length, ingredients.length]);
+  }, [dispatch, number]);
 
-  // Если данные ещё не загружены
-  if (!orders.length || !ingredients.length || ingredientsLoading) {
-    return <Preloader />;
-  }
-
-  // Если заказ не найден
-  if (!orderData) {
-    return <div>Заказ не найден</div>;
-  }
-
-  // Готовим данные для отображения
   const orderInfo = useMemo(() => {
-    if (!orderData || !ingredients.length) return null;
+    if (!currentOrder || !ingredients?.length) return null;
 
-    const date = new Date(orderData.createdAt);
+    const date = new Date(currentOrder.createdAt);
 
     type TIngredientsWithCount = {
-      [key: string]: TIngredient & { count: number };
+      [key: string]: any & { count: number };
     };
 
-    const ingredientsInfo = orderData.ingredients.reduce(
+    const ingredientsInfo = currentOrder.ingredients.reduce(
       (acc: TIngredientsWithCount, item) => {
         if (!acc[item]) {
           const ingredient = ingredients.find((ing) => ing._id === item);
@@ -71,16 +52,16 @@ export const OrderInfo: FC = () => {
     );
 
     return {
-      ...orderData,
+      ...currentOrder,
       ingredientsInfo,
       date,
       total
     };
-  }, [orderData, ingredients]);
+  }, [currentOrder, ingredients]);
 
-  if (!orderInfo) {
-    return <Preloader />;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!orderInfo) return <div>Order not found</div>;
 
   return <OrderInfoUI orderInfo={orderInfo} />;
 };

@@ -1,15 +1,10 @@
 import { useState, useRef, useEffect, FC, useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
-import { useAppSelector, useAppDispatch } from '../../services/store';
-import { fetchIngredients } from '../../services/slices/ingredients-slice';
+import { useAppSelector } from '../../services/store';
 
 export const BurgerIngredients: FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const dispatch = useAppDispatch();
   const {
     items: ingredients,
     loading,
@@ -20,30 +15,18 @@ export const BurgerIngredients: FC = () => {
     (state) => state.burgerConstructor
   );
 
-  useEffect(() => {
-    if (!ingredients.length) {
-      dispatch(fetchIngredients());
-    }
-  }, [dispatch, ingredients.length]);
-
   const buns = ingredients.filter((item) => item.type === 'bun');
   const mains = ingredients.filter((item) => item.type === 'main');
   const sauces = ingredients.filter((item) => item.type === 'sauce');
 
-  // Подсчитываем количество каждого ингредиента в конструкторе
   const ingredientCounts = useMemo(() => {
     const counts: { [key: string]: number } = {};
-
-    // Подсчитываем булку
     if (bun) {
-      counts[bun._id] = 2; // Булка всегда 2 штуки
+      counts[bun._id] = 2;
     }
-
-    // Подсчитываем остальные ингредиенты
     constructorIngredients.forEach((ingredient) => {
       counts[ingredient._id] = (counts[ingredient._id] || 0) + 1;
     });
-
     return counts;
   }, [bun, constructorIngredients]);
 
@@ -52,17 +35,9 @@ export const BurgerIngredients: FC = () => {
   const titleMainRef = useRef<HTMLHeadingElement>(null);
   const titleSaucesRef = useRef<HTMLHeadingElement>(null);
 
-  const [bunsRef, inViewBuns] = useInView({
-    threshold: 0
-  });
-
-  const [mainsRef, inViewFilling] = useInView({
-    threshold: 0
-  });
-
-  const [saucesRef, inViewSauces] = useInView({
-    threshold: 0
-  });
+  const [bunsRef, inViewBuns] = useInView({ threshold: 0 });
+  const [mainsRef, inViewFilling] = useInView({ threshold: 0 });
+  const [saucesRef, inViewSauces] = useInView({ threshold: 0 });
 
   useEffect(() => {
     if (inViewBuns) {
@@ -84,13 +59,8 @@ export const BurgerIngredients: FC = () => {
       titleSaucesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <BurgerIngredientsUI

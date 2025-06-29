@@ -1,34 +1,22 @@
-import { FC, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ProfileOrdersUI } from '@ui-pages';
+import { FC, useEffect, useRef } from 'react';
+import { OrdersList } from '@components';
 import { useAppDispatch, useAppSelector } from '../../services/store';
 import { fetchUserOrders } from '../../services/slices/feed-slice';
-import { fetchIngredients } from '../../services/slices/ingredients-slice';
 
 export const ProfileOrders: FC = () => {
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { userOrders, loading, error } = useAppSelector((state) => state.feed);
-  const { items: ingredients } = useAppSelector((state) => state.ingredients);
+  const { orders, loading, error } = useAppSelector((state) => state.feed);
+  const ordersRequested = useRef(false);
 
   useEffect(() => {
-    dispatch(fetchUserOrders()).then((result) => {
-      // Если произошла ошибка аутентификации, перенаправляем на логин
-      if (
-        result.meta.requestStatus === 'rejected' &&
-        result.payload === 'Authentication failed'
-      ) {
-        navigate('/login');
-      }
-    });
-    if (!ingredients.length) {
-      dispatch(fetchIngredients());
+    if (!orders?.length && !loading && !ordersRequested.current) {
+      ordersRequested.current = true;
+      dispatch(fetchUserOrders());
     }
-  }, [dispatch, ingredients.length, navigate]);
+  }, [dispatch, orders?.length, loading]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
-  return <ProfileOrdersUI orders={userOrders} />;
+  return <OrdersList orders={orders} />;
 };

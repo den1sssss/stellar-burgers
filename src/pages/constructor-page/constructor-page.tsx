@@ -1,23 +1,11 @@
-import { useAppDispatch, useAppSelector } from '../../services/store';
-import { useEffect } from 'react';
-import { fetchIngredients } from '../../services/slices/ingredients-slice';
-
-import styles from './constructor-page.module.css';
-
-import { BurgerIngredients } from '../../components';
-import { BurgerConstructor } from '../../components';
-import { Preloader } from '../../components/ui';
 import { FC } from 'react';
+import { useAppSelector } from '../../services/store';
+import styles from './constructor-page.module.css';
+import { BurgerIngredients, BurgerConstructor } from '../../components';
+import { Preloader } from '../../components/ui';
 
 export const ConstructorPage: FC = () => {
-  const dispatch = useAppDispatch();
   const { items, loading } = useAppSelector((state) => state.ingredients);
-
-  useEffect(() => {
-    if (!items.length) {
-      dispatch(fetchIngredients());
-    }
-  }, [dispatch, items.length]);
 
   return (
     <>

@@ -13,7 +13,7 @@ export const OrderCard: FC<OrderCardProps> = memo(({ order }) => {
   const { items: ingredients } = useAppSelector((state) => state.ingredients);
 
   const orderInfo = useMemo(() => {
-    if (!ingredients.length) return null;
+    if (!ingredients?.length) return null;
 
     const ingredientsInfo = order.ingredients.reduce(
       (acc: TIngredient[], item: string) => {

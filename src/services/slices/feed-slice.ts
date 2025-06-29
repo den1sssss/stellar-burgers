@@ -1,15 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import {
   getFeedsApi,
-  getOrdersApi,
-  clearAuthTokens
+  getOrderByNumberApi,
+  getOrdersApi
 } from '../../utils/burger-api';
 import { TOrder } from '../../utils/types';
-import { deleteCookie } from '../../utils/cookie';
 
 interface FeedState {
   orders: TOrder[];
-  userOrders: TOrder[];
+  currentOrder: TOrder | null;
   total: number;
   totalToday: number;
   loading: boolean;
@@ -18,34 +17,51 @@ interface FeedState {
 
 const initialState: FeedState = {
   orders: [],
-  userOrders: [],
+  currentOrder: null,
   total: 0,
   totalToday: 0,
   loading: false,
   error: null
 };
 
-export const fetchFeeds = createAsyncThunk('feed/fetchFeeds', getFeedsApi);
-
-export const fetchUserOrders = createAsyncThunk(
-  'feed/fetchUserOrders',
+export const fetchFeeds = createAsyncThunk(
+  'feed/fetchFeeds',
   async (_, { rejectWithValue }) => {
     try {
-      return await getOrdersApi();
+      const response = await getFeedsApi();
+      return response;
     } catch (error) {
-      // Если ошибка связана с аутентификацией, очищаем токены
-      if (
-        (error as any)?.message === 'jwt expired' ||
-        (error as any)?.message === 'jwt malformed' ||
-        (error as any)?.message === 'Token is invalid' ||
-        (error as any)?.message === 'You should be authorised' ||
-        (error as any)?.message === 'No refresh token'
-      ) {
-        clearAuthTokens();
-        return rejectWithValue('Authentication failed');
-      }
       return rejectWithValue(
-        (error as any)?.message || 'Failed to fetch user orders'
+        (error as any)?.message || 'Failed to fetch feeds'
+      );
+    }
+  }
+);
+
+export const fetchUserOrders = createAsyncThunk<
+  TOrder[],
+  void,
+  { rejectValue: string }
+>('feed/fetchUserOrders', async (_, { rejectWithValue }) => {
+  try {
+    const response = await getOrdersApi();
+    return response;
+  } catch (error) {
+    return rejectWithValue(
+      (error as any)?.message || 'Failed to fetch user orders'
+    );
+  }
+});
+
+export const fetchOrderByNumber = createAsyncThunk(
+  'feed/fetchOrderByNumber',
+  async (number: string, { rejectWithValue }) => {
+    try {
+      const response = await getOrderByNumberApi(parseInt(number));
+      return response.orders[0];
+    } catch (error) {
+      return rejectWithValue(
+        (error as any)?.message || 'Failed to fetch order'
       );
     }
   }
@@ -55,18 +71,15 @@ const feedSlice = createSlice({
   name: 'feed',
   initialState,
   reducers: {
-    updateOrders: (state, action) => {
-      state.orders = action.payload.orders;
-      state.total = action.payload.total;
-      state.totalToday = action.payload.totalToday;
+    clearError: (state) => {
+      state.error = null;
     },
-    updateUserOrders: (state, action) => {
-      state.userOrders = action.payload;
+    clearCurrentOrder: (state) => {
+      state.currentOrder = null;
     }
   },
   extraReducers: (builder) => {
     builder
-      // Fetch public feeds
       .addCase(fetchFeeds.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -79,26 +92,34 @@ const feedSlice = createSlice({
       })
       .addCase(fetchFeeds.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch orders';
+        state.error = action.payload as string;
       })
-      // Fetch user orders
       .addCase(fetchUserOrders.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(fetchUserOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.userOrders = action.payload;
+        state.orders = action.payload;
       })
       .addCase(fetchUserOrders.rejected, (state, action) => {
         state.loading = false;
-        // Не показываем ошибку, если это проблема аутентификации
-        if (action.payload !== 'Authentication failed') {
-          state.error = action.error.message || 'Failed to fetch user orders';
-        }
+        state.error = action.payload as string;
+      })
+      .addCase(fetchOrderByNumber.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchOrderByNumber.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentOrder = action.payload;
+      })
+      .addCase(fetchOrderByNumber.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   }
 });
 
-export const { updateOrders, updateUserOrders } = feedSlice.actions;
+export const { clearError, clearCurrentOrder } = feedSlice.actions;
 export default feedSlice.reducer;

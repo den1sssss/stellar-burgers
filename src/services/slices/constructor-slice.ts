@@ -12,18 +12,18 @@ const initialState: ConstructorState = {
 };
 
 const constructorSlice = createSlice({
-  name: 'constructor',
+  name: 'burgerConstructor',
   initialState,
   reducers: {
     addIngredient: (state, action: PayloadAction<TIngredient>) => {
-      if (action.payload.type === 'bun') {
-        state.bun = action.payload;
+      const ingredient = action.payload;
+      if (ingredient.type === 'bun') {
+        state.bun = ingredient;
       } else {
-        const ingredientWithId = {
-          ...action.payload,
-          constructorId: `${action.payload._id}_${Date.now()}_${Math.random()}`
-        };
-        state.ingredients.push(ingredientWithId);
+        state.ingredients.push({
+          ...ingredient,
+          constructorId: `${ingredient._id}-${Date.now()}`
+        });
       }
     },
     removeIngredient: (state, action: PayloadAction<string>) => {
@@ -36,9 +36,9 @@ const constructorSlice = createSlice({
       action: PayloadAction<{ dragIndex: number; hoverIndex: number }>
     ) => {
       const { dragIndex, hoverIndex } = action.payload;
-      const dragItem = state.ingredients[dragIndex];
+      const dragIngredient = state.ingredients[dragIndex];
       state.ingredients.splice(dragIndex, 1);
-      state.ingredients.splice(hoverIndex, 0, dragItem);
+      state.ingredients.splice(hoverIndex, 0, dragIngredient);
     },
     clearConstructor: (state) => {
       state.bun = null;

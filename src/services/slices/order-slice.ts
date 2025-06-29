@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { orderBurgerApi, clearAuthTokens } from '../../utils/burger-api';
+import { orderBurgerApi } from '../../utils/burger-api';
 import { TOrder } from '../../utils/types';
-import { deleteCookie } from '../../utils/cookie';
 
 interface OrderState {
   currentOrder: TOrder | null;
@@ -22,7 +21,6 @@ export const createOrder = createAsyncThunk(
       const response = await orderBurgerApi(ingredients);
       return response.order;
     } catch (error) {
-      // Если ошибка связана с аутентификацией, очищаем токены
       if (
         (error as any)?.message === 'jwt expired' ||
         (error as any)?.message === 'jwt malformed' ||
@@ -30,7 +28,6 @@ export const createOrder = createAsyncThunk(
         (error as any)?.message === 'You should be authorised' ||
         (error as any)?.message === 'No refresh token'
       ) {
-        clearAuthTokens();
         return rejectWithValue('Authentication failed');
       }
       return rejectWithValue(
@@ -61,7 +58,6 @@ const orderSlice = createSlice({
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.loading = false;
-        // Не показываем ошибку, если это проблема аутентификации
         if (action.payload !== 'Authentication failed') {
           state.error = action.error.message || 'Failed to create order';
         }

@@ -1,4 +1,4 @@
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import {
   ConstructorPage,
   Feed,
@@ -27,16 +27,12 @@ import {
   ProtectedRoute
 } from '@components';
 import { useAppDispatch, useAppSelector } from '../../services/store';
-import { getUser } from '../../services/slices/auth-slice';
 import { fetchIngredients } from '../../services/slices/ingredients-slice';
 import { fetchFeeds } from '../../services/slices/feed-slice';
 
 const ModalWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
-  const handleClose = () => {
-    navigate(-1);
-  };
-
+  const handleClose = () => navigate(-1);
   return (
     <Modal title='' onClose={handleClose}>
       {children}
@@ -48,49 +44,44 @@ const AppContent: FC = () => {
   const location = useLocation();
   const background = location.state?.background;
   const dispatch = useAppDispatch();
-  const { user, loading: authLoading } = useAppSelector((state) => state.auth);
   const { items: ingredients, loading: ingredientsLoading } = useAppSelector(
     (state) => state.ingredients
   );
-  const { orders, loading: feedsLoading } = useAppSelector(
+  const { orders: feeds, loading: feedsLoading } = useAppSelector(
     (state) => state.feed
   );
 
-  // Автологин при загрузке приложения
-  useEffect(() => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (refreshToken && !user && !authLoading) {
-      dispatch(getUser());
-    }
-  }, [dispatch, user, authLoading]);
+  const ingredientsRequested = useRef(false);
+  const feedsRequested = useRef(false);
 
-  // Загрузка ингредиентов при загрузке приложения (только один раз)
   useEffect(() => {
-    if (!ingredients.length && !ingredientsLoading) {
+    if (
+      !ingredients?.length &&
+      !ingredientsLoading &&
+      !ingredientsRequested.current
+    ) {
+      ingredientsRequested.current = true;
       dispatch(fetchIngredients());
     }
-  }, [dispatch, ingredients.length, ingredientsLoading]);
+  }, [dispatch, ingredients?.length, ingredientsLoading]);
 
-  // Загрузка заказов при загрузке приложения (только один раз)
   useEffect(() => {
-    if (!orders.length && !feedsLoading) {
+    if (!feeds?.length && !feedsLoading && !feedsRequested.current) {
+      feedsRequested.current = true;
       dispatch(fetchFeeds());
     }
-  }, [dispatch, orders.length, feedsLoading]);
+  }, [dispatch, feeds?.length, feedsLoading]);
 
   return (
     <div className={styles.app}>
       <AppHeader />
       <Routes location={background || location}>
-        {/* Public routes */}
         <Route path='/' element={<ConstructorPage />} />
         <Route path='/feed' element={<Feed />} />
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/reset-password' element={<ResetPassword />} />
-
-        {/* Protected routes */}
         <Route
           path='/profile'
           element={
@@ -107,8 +98,6 @@ const AppContent: FC = () => {
             </ProtectedRoute>
           }
         />
-
-        {/* Detail pages - только для прямых переходов (не модальные) */}
         {!background && (
           <>
             <Route path='/feed/:number' element={<OrderInfo />} />
@@ -123,12 +112,8 @@ const AppContent: FC = () => {
             />
           </>
         )}
-
-        {/* 404 route */}
         <Route path='*' element={<NotFound404 />} />
       </Routes>
-
-      {/* Modal routes - только когда есть background */}
       {background && (
         <Routes>
           <Route

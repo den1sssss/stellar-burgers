@@ -9,7 +9,7 @@ export type BurgerConstructorProps = {
   price: number;
   orderRequest: boolean;
   constructorItems: ConstructorItems;
-  orderModalData: any; // уточнить тип, если возможно
+  orderModalData: any;
   onOrderClick: () => void;
   closeOrderModal: () => void;
 };

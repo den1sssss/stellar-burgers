@@ -1,14 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { TUser, TLoginData, TRegisterData } from '../../utils/types';
 import {
-  loginUserApi,
   registerUserApi,
+  loginUserApi,
   logoutApi,
   getUserApi,
-  updateUserApi,
-  clearAuthTokens
+  updateUserApi
 } from '../../utils/burger-api';
-import { setCookie, deleteCookie } from '../../utils/cookie';
+import { TUser, TLoginData, TRegisterData } from '../../utils/types';
 
 interface AuthState {
   user: TUser | null;
@@ -22,31 +20,41 @@ const initialState: AuthState = {
   error: null
 };
 
-export const loginUser = createAsyncThunk(
-  'auth/login',
-  async (data: TLoginData) => {
-    const response = await loginUserApi(data);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    setCookie('accessToken', response.accessToken, { expires: 1200 }); // 20 минут
-    return response.user;
-  }
-);
-
 export const registerUser = createAsyncThunk(
-  'auth/register',
-  async (data: TRegisterData) => {
-    const response = await registerUserApi(data);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    setCookie('accessToken', response.accessToken, { expires: 1200 }); // 20 минут
-    return response.user;
+  'auth/registerUser',
+  async (data: TRegisterData, { rejectWithValue }) => {
+    try {
+      const response = await registerUserApi(data);
+      return response.user;
+    } catch (error) {
+      return rejectWithValue((error as any)?.message || 'Registration failed');
+    }
   }
 );
 
-export const logoutUser = createAsyncThunk('auth/logout', async () => {
-  await logoutApi();
-  localStorage.removeItem('refreshToken');
-  deleteCookie('accessToken');
-});
+export const loginUser = createAsyncThunk(
+  'auth/loginUser',
+  async (data: TLoginData, { rejectWithValue }) => {
+    try {
+      const response = await loginUserApi(data);
+      return response.user;
+    } catch (error) {
+      return rejectWithValue((error as any)?.message || 'Login failed');
+    }
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  'auth/logoutUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      await logoutApi();
+      return null;
+    } catch (error) {
+      return rejectWithValue((error as any)?.message || 'Logout failed');
+    }
+  }
+);
 
 export const getUser = createAsyncThunk(
   'auth/getUser',
@@ -55,19 +63,6 @@ export const getUser = createAsyncThunk(
       const response = await getUserApi();
       return response.user;
     } catch (error) {
-      // Если нет токенов или они недействительны, не показываем ошибку
-      if (
-        (error as any)?.message === 'jwt expired' ||
-        (error as any)?.message === 'jwt malformed' ||
-        (error as any)?.message === 'Token is invalid' ||
-        (error as any)?.message === 'No access token' ||
-        (error as any)?.message === 'No refresh token' ||
-        !localStorage.getItem('refreshToken')
-      ) {
-        // Очищаем недействительные токены
-        clearAuthTokens();
-        return rejectWithValue('No valid tokens');
-      }
       return rejectWithValue(
         (error as any)?.message || 'Failed to get user data'
       );
@@ -77,9 +72,15 @@ export const getUser = createAsyncThunk(
 
 export const updateUser = createAsyncThunk(
   'auth/updateUser',
-  async (data: Partial<TRegisterData>) => {
-    const response = await updateUserApi(data);
-    return response.user;
+  async (data: TUser, { rejectWithValue }) => {
+    try {
+      const response = await updateUserApi(data);
+      return response.user;
+    } catch (error) {
+      return rejectWithValue(
+        (error as any)?.message || 'Failed to update user data'
+      );
+    }
   }
 );
 
@@ -93,20 +94,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Login
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message || 'Failed to login';
-      })
-      // Register
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -117,13 +104,32 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to register';
+        state.error = action.payload as string;
       })
-      // Logout
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
       .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
         state.user = null;
       })
-      // Get User
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
       .addCase(getUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -134,12 +140,8 @@ const authSlice = createSlice({
       })
       .addCase(getUser.rejected, (state, action) => {
         state.loading = false;
-        // Не показываем ошибку, если просто нет токенов
-        if (action.payload !== 'No valid tokens') {
-          state.error = action.error.message || 'Failed to get user data';
-        }
+        state.error = action.payload as string;
       })
-      // Update User
       .addCase(updateUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -150,7 +152,7 @@ const authSlice = createSlice({
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to update user data';
+        state.error = action.payload as string;
       });
   }
 });

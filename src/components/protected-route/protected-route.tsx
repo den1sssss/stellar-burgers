@@ -1,4 +1,4 @@
-import { FC, ReactElement, useEffect } from 'react';
+import { FC, ReactElement, useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../services/store';
 import { getUser } from '../../services/slices/auth-slice';
@@ -15,34 +15,31 @@ export const ProtectedRoute: FC<ProtectedRouteProps> = ({
 }) => {
   const location = useLocation();
   const dispatch = useAppDispatch();
-  const { user, loading } = useAppSelector((state) => state.auth);
+  const { user, loading, error } = useAppSelector((state) => state.auth);
+  const [authAttempted, setAuthAttempted] = useState(false);
   const from = location.state?.from || location.pathname;
 
-  // Автологин при загрузке защищенного маршрута
   useEffect(() => {
     const refreshToken = localStorage.getItem('refreshToken');
-    if (refreshToken && !user && !loading) {
+    if (refreshToken && !user && !loading && !authAttempted) {
+      setAuthAttempted(true);
       dispatch(getUser());
     }
-  }, [dispatch, user, loading]);
+  }, [dispatch, user, loading, authAttempted]);
 
-  // Показываем прелоадер во время проверки авторизации
-  if (loading) {
+  const refreshToken = localStorage.getItem('refreshToken');
+
+  if (loading || (refreshToken && !user && !authAttempted)) {
     return <Preloader />;
   }
 
-  // Если разрешен неавторизованный доступ, а пользователь авторизован...
   if (anonymous && user) {
-    // ...то отправляем его на предыдущую страницу
     return <Navigate to={from} />;
   }
 
-  // Если требуется авторизация, а пользователь не авторизован...
   if (!anonymous && !user) {
-    // ...то отправляем его на страницу логин
     return <Navigate to='/login' state={{ from: location }} replace />;
   }
 
-  // Если все ок, то рендерим внутреннее содержимое
   return children;
 };
