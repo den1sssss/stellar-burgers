@@ -29,6 +29,7 @@ import {
 import { useAppDispatch, useAppSelector } from '../../services/store';
 import { fetchIngredients } from '../../services/slices/ingredients-slice';
 import { fetchFeeds } from '../../services/slices/feed-slice';
+import { getUser } from '../../services/slices/auth-slice';
 
 const ModalWrapper: FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
@@ -50,9 +51,21 @@ const AppContent: FC = () => {
   const { orders: feeds, loading: feedsLoading } = useAppSelector(
     (state) => state.feed
   );
+  const { user, loading: authLoading } = useAppSelector((state) => state.auth);
 
   const ingredientsRequested = useRef(false);
   const feedsRequested = useRef(false);
+  const authRequested = useRef(false);
+
+  useEffect(() => {
+    if (!user && !authLoading && !authRequested.current) {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        authRequested.current = true;
+        dispatch(getUser());
+      }
+    }
+  }, [dispatch, user, authLoading]);
 
   useEffect(() => {
     if (

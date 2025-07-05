@@ -47,7 +47,13 @@ const refreshToken = () => {
         return Promise.reject(refreshData);
       }
       localStorage.setItem('refreshToken', refreshData.refreshToken);
-      setCookie('accessToken', refreshData.accessToken, { expires: 1200 });
+      setCookie(
+        'accessToken',
+        refreshData.accessToken.replace(/^Bearer /, ''),
+        { expires: 1200 }
+      );
+      console.log('[REFRESH] accessToken:', refreshData.accessToken);
+      console.log('[REFRESH] refreshToken:', refreshData.refreshToken);
       return refreshData;
     })
     .catch((error) => {
@@ -233,12 +239,16 @@ export const loginUserApi = (data: TLoginData) =>
   })
     .then((res) => checkResponse<TAuthResponse>(res))
     .then((data) => {
-      if (data?.success) {
-        localStorage.setItem('refreshToken', data.refreshToken);
-        setCookie('accessToken', data.accessToken, { expires: 1200 });
-        return data;
+      if (!data.success) {
+        return Promise.reject(data);
       }
-      return Promise.reject(data);
+      localStorage.setItem('refreshToken', data.refreshToken);
+      setCookie('accessToken', data.accessToken.replace(/^Bearer /, ''), {
+        expires: 1200
+      });
+      console.log('[LOGIN] accessToken:', data.accessToken);
+      console.log('[LOGIN] refreshToken:', data.refreshToken);
+      return data;
     });
 
 export const forgotPasswordApi = (data: { email: string }) =>
