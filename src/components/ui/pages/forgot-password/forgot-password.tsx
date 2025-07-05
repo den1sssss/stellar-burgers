@@ -29,6 +29,9 @@ export const ForgotPasswordUI: FC<PageUIProps> = ({
             error={false}
             errorText=''
             size='default'
+            onIconClick={() => {}}
+            onPointerEnterCapture={() => {}}
+            onPointerLeaveCapture={() => {}}
           />
         </div>
         <div className={`pb-6 ${styles.button}`}>
@@ -42,9 +45,9 @@ export const ForgotPasswordUI: FC<PageUIProps> = ({
           </p>
         )}
       </form>
-      <div className={`${styles.question} text text_type_main-default pb-6`}>
+      <div className={`${styles.question} text text_type_main-default`}>
         Вспомнили пароль?
-        <Link to={'/login'} className={`pl-2 ${styles.link}`}>
+        <Link to='/login' className={`pl-2 ${styles.link}`}>
           Войти
         </Link>
       </div>

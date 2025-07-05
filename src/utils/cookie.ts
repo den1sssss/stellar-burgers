@@ -1,47 +1,49 @@
-export function getCookie(name: string): string | undefined {
+interface CookieOptions {
+  expires?: number;
+  path?: string;
+  domain?: string;
+  secure?: boolean;
+  sameSite?: 'strict' | 'lax' | 'none';
+}
+
+export const setCookie = (
+  name: string,
+  value: string,
+  options: CookieOptions = {}
+): void => {
+  const {
+    expires = 7,
+    path = '/',
+    domain,
+    secure = false,
+    sameSite = 'lax'
+  } = options;
+
+  let cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+
+  if (expires) {
+    const date = new Date();
+    date.setTime(date.getTime() + expires * 24 * 60 * 60 * 1000);
+    cookieString += `; expires=${date.toUTCString()}`;
+  }
+
+  if (path) cookieString += `; path=${path}`;
+  if (domain) cookieString += `; domain=${domain}`;
+  if (secure) cookieString += '; secure';
+  if (sameSite) cookieString += `; samesite=${sameSite}`;
+
+  document.cookie = cookieString;
+};
+
+export const getCookie = (name: string): string | undefined => {
   const matches = document.cookie.match(
     new RegExp(
-      '(?:^|; )' +
-        // eslint-disable-next-line no-useless-escape
-        name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') +
-        '=([^;]*)'
+      `(?:^|; )${name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1')}=([^;]*)`
     )
   );
   return matches ? decodeURIComponent(matches[1]) : undefined;
-}
+};
 
-export function setCookie(
-  name: string,
-  value: string,
-  props: { [key: string]: string | number | Date | boolean } = {}
-) {
-  props = {
-    path: '/',
-    ...props
-  };
-
-  let exp = props.expires;
-  if (exp && typeof exp === 'number') {
-    const d = new Date();
-    d.setTime(d.getTime() + exp * 1000);
-    exp = props.expires = d;
-  }
-
-  if (exp && exp instanceof Date) {
-    props.expires = exp.toUTCString();
-  }
-  value = encodeURIComponent(value);
-  let updatedCookie = name + '=' + value;
-  for (const propName in props) {
-    updatedCookie += '; ' + propName;
-    const propValue = props[propName];
-    if (propValue !== true) {
-      updatedCookie += '=' + propValue;
-    }
-  }
-  document.cookie = updatedCookie;
-}
-
-export function deleteCookie(name: string) {
+export const deleteCookie = (name: string): void => {
   setCookie(name, '', { expires: -1 });
-}
+};

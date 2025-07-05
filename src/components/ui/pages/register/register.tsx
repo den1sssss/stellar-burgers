@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import {
   Input,
   Button,
@@ -37,6 +37,9 @@ export const RegisterUI: FC<RegisterUIProps> = ({
               error={false}
               errorText=''
               size='default'
+              onIconClick={() => {}}
+              onPointerEnterCapture={() => {}}
+              onPointerLeaveCapture={() => {}}
             />
           </div>
           <div className='pb-6'>
@@ -45,10 +48,13 @@ export const RegisterUI: FC<RegisterUIProps> = ({
               placeholder='E-mail'
               onChange={(e) => setEmail(e.target.value)}
               value={email}
-              name={'email'}
+              name='email'
               error={false}
               errorText=''
-              size={'default'}
+              size='default'
+              onIconClick={() => {}}
+              onPointerEnterCapture={() => {}}
+              onPointerLeaveCapture={() => {}}
             />
           </div>
           <div className='pb-6'>
@@ -70,7 +76,7 @@ export const RegisterUI: FC<RegisterUIProps> = ({
           )}
         </>
       </form>
-      <div className={`${styles.question} text text_type_main-default pb-6`}>
+      <div className={`${styles.question} text text_type_main-default`}>
         Уже зарегистрированы?
         <Link to='/login' className={`pl-2 ${styles.link}`}>
           Войти

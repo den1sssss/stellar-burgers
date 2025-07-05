@@ -10,6 +10,7 @@ export type TIngredient = {
   image: string;
   image_large: string;
   image_mobile: string;
+  constructorId?: string;
 };
 
 export type TConstructorIngredient = TIngredient & {
@@ -37,4 +38,27 @@ export type TUser = {
   name: string;
 };
 
+export type TLoginData = {
+  email: string;
+  password: string;
+};
+
+export type TRegisterData = {
+  email: string;
+  name: string;
+  password: string;
+};
+
 export type TTabMode = 'bun' | 'sauce' | 'main';
+
+export type TWSMessage = {
+  success: boolean;
+  orders: TOrder[];
+  total: number;
+  totalToday: number;
+};
+
+export type TWSUserMessage = {
+  success: boolean;
+  orders: TOrder[];
+};
